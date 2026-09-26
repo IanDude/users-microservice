@@ -1,8 +1,8 @@
 {
   "name": "users-microservice",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Test microservice for users",
+  "author": "IanDude",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -17,15 +17,31 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm": "ts-node ./node_modules/typeorm/cli",
+    "migration:run": "npm run typeorm migration:run -- -d src/config/typeorm.config.ts",
+    "migration:generate": "npm run typeorm migration:generate -- -d src/config/typeorm.config.ts",
+    "migration:revert": "npm run typeorm migration:revert -- -d src/config/typeorm.config.ts",
+    "migration:show": "npm run typeorm migration:show -- -d src/config/typeorm.config.ts",
+    "migration:seed": "ts-node src/database/seeders/seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^12.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/microservices": "^11.2.6",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/typeorm": "^12.0.1",
+    "amqp-connection-manager": "^5.0.0",
+    "amqplib": "^2.0.1",
+    "argon2": "^0.45.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "ioredis": "^5.11.1",
+    "mssql": "^12.7.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "typeorm": "^1.1.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
