@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Users } from './database/entities/users.entity';
 import { PasswordUtils } from './util/passwords.helper';
 import { getTypeOrmConfig } from './config/typeorm.config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
@@ -16,6 +17,19 @@ import { getTypeOrmConfig } from './config/typeorm.config';
         getTypeOrmConfig(configService),
     }),
     TypeOrmModule.forFeature([Users]),
+    ClientsModule.register({
+      clients: [
+        {
+          name: 'ORDERS_SERVICE',
+          transport: Transport.RMQ,
+          options: {
+            urls: ['amqp://localhost:5672'],
+            queue: 'orders-queue',
+            queueOptions: { durable: true },
+          },
+        },
+      ],
+    }),
   ],
   controllers: [AppController],
   providers: [AppService, PasswordUtils],

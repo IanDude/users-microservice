@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from './database/entities/users.entity';
 import { Repository } from 'typeorm';
 import { PasswordUtils } from './util/passwords.helper';
-import { RpcException } from '@nestjs/microservices';
+import { RmqContext, RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class AppService {
@@ -29,8 +29,12 @@ export class AppService {
     return await this.usersRepository.find();
   }
 
-  loginNotif() {
+  loginNotif(context: RmqContext) {
+    const channel = context.getChannelRef();
+    const message = context.getMessage();
+
     console.log(`Notification that user is logged in`);
+    channel.ack(message);
   }
 
   async findOne(uuid: string) {

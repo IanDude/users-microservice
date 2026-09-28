@@ -1,11 +1,21 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Inject } from '@nestjs/common';
 import { AppService } from './app.service';
-import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
+import {
+  ClientProxy,
+  Ctx,
+  EventPattern,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
 import { CreateUserDto } from './dto/create-user.dto';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    @Inject('ORDERS_SERVICE') private ordersClient: ClientProxy,
+  ) {}
 
   @MessagePattern('USERS.CREATEONE')
   async CreateOne(@Payload() data: CreateUserDto) {
@@ -18,12 +28,17 @@ export class AppController {
   }
 
   @EventPattern('USERS.LOGIN')
-  loginNotif() {
-    this.appService.loginNotif();
+  loginNotif(@Ctx() context: RmqContext) {
+    this.appService.loginNotif(context);
   }
 
   @MessagePattern('USERS.GETONE')
-  async FindOne(@Payload() data: { uuid: string }) {
+  async FindOne(@Payload() data: { uuid: string }, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef();
+    const message = context.getMessage();
+    console.log(channel);
+    console.log(message);
+    channel.ack(message);
     return await this.appService.findOne(data.uuid);
   }
 
@@ -38,7 +53,25 @@ export class AppController {
   }
 
   @EventPattern('SYSTEM.AUDIT_LOG')
-  onSystemAuditLog(data: { endpoint: string; error: string; timestamp: Date }) {
+  onSystemAuditLog(
+    @Payload() data: { endpoint: string; error: string; timestamp: Date },
+  ) {
     return this.appService.onSystemAuditLog(data);
+  }
+
+  @EventPattern('ORDER.CREATED')
+  processPayment(@Payload() order: { id: number; status: string }) {
+    const isDeclined = Math.random() > 0.5;
+
+    if (isDeclined) {
+      console.log('Payment DECLINED for order', order.id);
+
+      this.ordersClient.emit('PAYMENT.FAILED', {
+        orderId: order.id,
+        reason: 'Card Declined',
+      });
+    } else {
+      this.ordersClient.emit('PAYMENT.SUCCESS', { orderId: order.id });
+    }
   }
 }

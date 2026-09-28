@@ -24,6 +24,7 @@ async function bootstrap() {
       urls: ['amqp://localhost:5672'],
       queue: 'users-queue',
       queueOptions: { durable: true },
+      // noAck: false,
     },
   });
   app.useGlobalPipes(
