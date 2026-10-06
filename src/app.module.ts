@@ -7,6 +7,8 @@ import { Users } from './database/entities/users.entity';
 import { PasswordUtils } from './util/passwords.helper';
 import { getTypeOrmConfig } from './config/typeorm.config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { TokenUtils } from './util/tokens.helper';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -32,6 +34,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, PasswordUtils],
+  providers: [AppService, JwtService, PasswordUtils, TokenUtils],
 })
 export class AppModule {}

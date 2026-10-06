@@ -2,11 +2,9 @@ import { Controller, Inject } from '@nestjs/common';
 import { AppService } from './app.service';
 import {
   ClientProxy,
-  Ctx,
   EventPattern,
   MessagePattern,
   Payload,
-  RmqContext,
 } from '@nestjs/microservices';
 import { CreateUserDto } from './dto/create-user.dto';
 
@@ -27,19 +25,39 @@ export class AppController {
     return await this.appService.getAll();
   }
 
-  @EventPattern('USERS.LOGIN')
-  loginNotif(@Ctx() context: RmqContext) {
-    this.appService.loginNotif(context);
+  @EventPattern('USERS.LOGINNOTIF')
+  loginNotif() {
+    this.appService.loginNotif();
+  }
+
+  @MessagePattern('USERS.LOGIN')
+  async login(@Payload() userData) {
+    return await this.appService.login(userData);
   }
 
   @MessagePattern('USERS.GETONE')
-  async FindOne(@Payload() data: { uuid: string }, @Ctx() context: RmqContext) {
-    const channel = context.getChannelRef();
-    const message = context.getMessage();
-    console.log(channel);
-    console.log(message);
-    channel.ack(message);
-    return await this.appService.findOne(data.uuid);
+  async FindOne(
+    @Payload() userData: { uuid?: string; username?: string; id?: number },
+    // @Ctx() context: RmqContext,
+  ) {
+    // const channel = context.getChannelRef();
+    // const message = context.getMessage();
+    // console.log(channel);
+    // console.log(message);
+    // channel.ack(message);
+    return await this.appService.findOne(userData);
+  }
+
+  @MessagePattern('USERS.VALIDATE_LOCAL')
+  async onLocalValidate(
+    @Payload() userData: { username: string; password: string },
+  ) {
+    return await this.appService.validateLocal(userData);
+  }
+
+  @MessagePattern('USERS.VALIDATE_JWT')
+  async onJwtValidate(@Payload() payload: { sub: number; username: string }) {
+    return await this.appService.validateJwt(payload);
   }
 
   @MessagePattern('USERS.FAST')

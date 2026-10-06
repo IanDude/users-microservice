@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import {
-  MicroserviceOptions,
+  // MicroserviceOptions,
   RmqOptions,
   Transport,
 } from '@nestjs/microservices';
